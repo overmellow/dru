@@ -1,0 +1,27 @@
+/*Menus*/
+ul.menu { margin: 0; padding: 0; list-style: none; }
+
+ul.menu li { margin:0; position: relative; list-style: none; padding: 0; }
+
+ul.menu li a { padding: 7px 0 8px 25px; line-height: 150%; display: block; }
+
+ul.menu li a.active, ul.menu li a.active-trail { color: #1d1d1d; }
+
+ul.menu li a:hover { text-decoration: none; background-color: #252525; color: #ffffff; }
+
+ul.menu li.expanded ul { padding-left: 25px; }
+
+/*menu arrows  */
+ul.menu li.collapsed > a:before { content: "\f105"; font-family: 'FontAwesome'; position: absolute; left: 0px; font-size: 20px; top: 7px; color: #2a68af;
+-webkit-transition: all linear 0.2s; -moz-transition: all linear 0.2s; -o-transition: all linear 0.2s;  -ms-transition: all linear 0.2s; 
+transition: all linear 0.2s; font-weight: 700; }
+
+ul.menu li.expanded > a:before { content: "\f107"; font-family: 'FontAwesome'; position: absolute; left: 0px; font-size: 20px; top: 7px; color: #2a68af;
+-webkit-transition: all linear 0.2s; -moz-transition: all linear 0.2s; -o-transition: all linear 0.2s;  -ms-transition: all linear 0.2s; 
+transition: all linear 0.2s; font-weight: 700; }
+
+ul.menu li.active-trail > a:before, ul.menu li.active-trail a.active:before { color: #1d1d1d; }
+
+ul.menu li > a:hover:before { left: 10px; color: #2a68af!important; }
+
+ul.menu li.expanded > a:hover:before { left: 5px; }

@@ -1,0 +1,34 @@
+name = Complit
+description = Complit Bootstrap 4 theme.
+core = 7.x
+
+stylesheets[all][] = css/style.css
+stylesheets[all][] = css/carousel.css
+stylesheets[all][] = css/mymenu.css
+stylesheets[all][] = css/nicemenu.css
+
+scripts[] = js/script.js
+
+regions[page_top] = Page top
+regions[page_bottom] = Page bottom
+regions[menu_top] = Menu Top
+regions[menu_bottom] = Menu Bottom
+regions[sidebar_left] = Sidebar Left
+regions[content] = Content
+regions[sidebar_right] = Sidebar Right
+regions[content_after] = After Content
+regions[sliding] = Sliding
+
+regions[footer_top_one] = Footer Top One
+regions[footer_top_two] = Footer Top Two
+regions[footer_one] = Footer One
+regions[footer_two] = Footer Two
+regions[footer_three] = Footer Three
+regions[footer_four] = Footer Four
+regions[footer_copyright] = Footer Copyright
+
+; Information added by Drupal.org packaging script on 2018-09-20
+version = "7.x-1.0"
+core = "7.x"
+project = "complit_theme"
+datestamp = "1537487285"
