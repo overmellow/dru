@@ -14,6 +14,7 @@ regions[page_bottom] = Page bottom
 regions[menu_top] = Menu Top
 regions[menu_bottom] = Menu Bottom
 regions[sidebar_left] = Sidebar Left
+regions[sidebar_left_second] = Sidebar Left Second
 regions[content] = Content
 regions[sidebar_right] = Sidebar Right
 regions[content_after] = After Content

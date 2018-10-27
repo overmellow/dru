@@ -1,7 +1,7 @@
 <header>
     <div>
         <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top" <?php if (user_is_logged_in()): ?> style="margin-top: 28px; z-index: 990;" <?php endif; ?>>
-            <a class="navbar-brand" href="/dru">Complit</a>
+            <a class="navbar-brand" href="/">Complit</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>
@@ -21,7 +21,25 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-8">
-                    <?php print render($page['sidebar_left']); ?> 
+                    <nav>
+                        <div class="nav nav-tabs nav-justified mb-3" id="nav-tab" role="tablist">
+                            <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">
+                                <h3>News</h3>
+                            </a>
+                            <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">
+                                <h3>Feature Courses</h3>
+                            </a>
+                        </div>
+                    </nav>
+                    <div class="tab-content" id="nav-tabContent">
+                        <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                            <?php print render($page['sidebar_left']); ?> `
+                        </div>
+                        <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                            <?php print render($page['sidebar_left_second']); ?> 
+                        </div>
+                    </div>
+                    
                 </div>               
                 <div class="col-4">
                     <?php print render($page['sidebar_right']); ?>  

@@ -1,7 +1,7 @@
 <header>
     <div>
         <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top" <?php if (user_is_logged_in()): ?> style="margin-top: 28px; z-index: 990;" <?php endif; ?>>
-            <a class="navbar-brand" href="/dru">Complit</a>
+            <a class="navbar-brand" href="/">Complit</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>
