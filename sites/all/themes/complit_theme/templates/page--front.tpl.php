@@ -21,7 +21,7 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-8">
-                    <nav>
+<!--                    <nav>
                         <div class="nav nav-tabs nav-justified mb-3" id="nav-tab" role="tablist">
                             <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">
                                 <h3>News</h3>
@@ -30,10 +30,22 @@
                                 <h3>Feature Courses</h3>
                             </a>
                         </div>
-                    </nav>
+                    </nav>-->
+                    <ul class="nav nav-tabs nav-justified mb-3 quicktabs-tabs" id="myTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="home" aria-selected="true">
+                                <h4>News</h4>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="profile" aria-selected="false">
+                                <h4>Feature Courses</h4>
+                            </a>
+                        </li>                    
+                    </ul>
                     <div class="tab-content" id="nav-tabContent">
                         <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-                            <?php print render($page['sidebar_left']); ?> `
+                            <?php print render($page['sidebar_left']); ?>
                         </div>
                         <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
                             <?php print render($page['sidebar_left_second']); ?> 

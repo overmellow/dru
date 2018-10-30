@@ -209,3 +209,22 @@ body {
 .breadcrumb {
     background-color: inherit;
 }
+
+ul.quicktabs-tabs, .nav-tabs {
+    /*border-bottom: 1px solid #c2c2c2;*/
+}
+.nav-item .nav-link {
+    border-bottom: 1px solid #c2c2c2;
+}
+
+.nav-item .nav-link.active {
+    border-left: 1px solid #c2c2c2;
+    border-right: 1px solid #c2c2c2;
+    border-top: 1px solid #c2c2c2; 
+}
+
+.nav-item .nav-link.active, .nav-item .nav-link:hover {
+    border-radius: 0;
+/*    border: 1px solid #c2c2c2;
+    margin-bottom: -1px;*/
+}
