@@ -82,7 +82,7 @@
 ?>
 
 <div>
-    <div class="jumbotron img-fluid shadow" style="background-image: url(<?php echo file_create_url($node->field_image[$node->language][0]['uri']); ?>); background-size:100% auto;">
+    <div class="jumbotron img-fluid shadow-sm" style="background-image: url(<?php echo file_create_url($node->field_image[$node->language][0]['uri']); ?>); background-size:100% auto;">
         <div class="container">
             <h1 class="display-5 text-white">
                 <?php if (!$page): ?>

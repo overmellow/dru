@@ -1,18 +1,25 @@
 $(document).ready(function(){
-//    $("#main-menu > li").hover(
-//        function(){
-//            block_id = $(this).val();
-//            console.log(this);
-//            jQuery("#megamenu_block1").fadeIn(500);
-//            console.log("show");
-////            console.log(this);
-//        },
-//        function(){
-//            jQuery("#megamenu_block1").fadeOut(750)
-//            console.log("hide");
-//            //            console.log(this);
-//        }
-//    );
+    window.onscroll = function() {myFunction()};
+    var navbar = document.getElementById("main-menu");
+    var sticky = navbar.offsetTop;    
+    function myFunction() {
+        var adminnavbar = document.getElementById("admin-menu");
+        if(adminnavbar != null){
+            if (window.pageYOffset + 28 >= sticky) 
+            {
+                navbar.classList.add("fixed-top-admin-navbar-exist")
+            } else {
+                navbar.classList.remove("fixed-top-admin-navbar-exist");
+            }
+        } else {
+            if (window.pageYOffset >= sticky) {
+                navbar.classList.add("fixed-top")
+            } else {
+                navbar.classList.remove("fixed-top");
+            } 
+        }   
+    }
+
 });
 
 

@@ -24,7 +24,7 @@
  * @ingroup views_templates
  */
 ?>
-
+<!--
 <div class="card bg-dark text-white mb-3 hoverable">
     <?php print $fields['field_image']->content; ?>
     <div class="card-img-overlay dark-layer">
@@ -32,3 +32,7 @@
         <?php print $fields['body']->content; ?>
     </div>
 </div>
+-->
+<?php print $fields['field_image']->content; ?>
+<?php print $fields['title']->content; ?>
+<?php print $fields['body']->content; ?>

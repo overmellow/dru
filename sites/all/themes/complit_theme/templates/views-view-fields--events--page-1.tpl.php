@@ -26,7 +26,7 @@
 ?>
 
 <div class="row mb-3">
-    <div class="col-3 border-right">
+    <div class="col-2 border-right">
         <div class="border-bottom">
             <div class="text-center month"><?php print $fields['field_date_1']->content; ?></div>
             <div class="text-center day"><?php print $fields['field_date']->content; ?></div>            
@@ -36,7 +36,7 @@
             <div class="text-center time"><?php print $fields['field_time_from']->content; ?> - <?php print $fields['field_time_to']->content; ?></div>
         </div>
     </div>
-    <div class="col-9">
+    <div class="col-10">
         <h4><?php print $fields['title']->content; ?></h4>
         <p><?php print $fields['body']->content; ?></p>
     </div>

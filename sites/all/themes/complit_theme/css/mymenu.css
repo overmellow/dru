@@ -12,9 +12,20 @@ ul.menu li a:hover { text-decoration: none; background-color: #252525; color: #f
 ul.menu li.expanded ul { padding-left: 25px; }
 
 /*menu arrows  */
-ul.menu li.collapsed > a:before { content: "\f105"; font-family: 'FontAwesome'; position: absolute; left: 0px; font-size: 20px; top: 7px; color: #2a68af;
--webkit-transition: all linear 0.2s; -moz-transition: all linear 0.2s; -o-transition: all linear 0.2s;  -ms-transition: all linear 0.2s; 
-transition: all linear 0.2s; font-weight: 700; }
+ul.menu li.collapsed > a:before { 
+    content: "\f105"; font-family: 'FontAwesome';
+    position: absolute;
+    left: 0px;
+    font-size: 20px;
+    top: 7px;
+    color: #2a68af;
+    -webkit-transition: all linear 0.2s;
+    -moz-transition: all linear 0.2s;
+    -o-transition: all linear 0.2s;
+    -ms-transition: all linear 0.2s; 
+    transition: all linear 0.2s; 
+    font-weight: 700; 
+}
 
 ul.menu li.expanded > a:before { content: "\f107"; font-family: 'FontAwesome'; position: absolute; left: 0px; font-size: 20px; top: 7px; color: #2a68af;
 -webkit-transition: all linear 0.2s; -moz-transition: all linear 0.2s; -o-transition: all linear 0.2s;  -ms-transition: all linear 0.2s; 

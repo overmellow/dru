@@ -1,0 +1,509 @@
+<?php
+define('WATCHDOG_TYPE', basename(__FILE__, '.install'));
+
+/**
+ * Implementation of hook requirements:
+ * This helps the user upgrade from ucb_cas-7.x-1.x to ucberkeley_cas-7.x-2.x
+ *
+ * @param $phase
+ * @return array
+ */
+function ucberkeley_cas_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+
+  $cas_req_version = '1.5';
+  $ldap_req_version = '2.2';
+  $cas_attributes_req_version = '1.0-rc3';
+
+  $update_message = <<<EOT
+<p>The module UC Berkeley CAS (ucberkeley_cas) is a replacement for UCB CAS (ucb_cas).  UCB CAS must be removed from your system before UC Berkeley CAS can be installed.</p>
+
+<p>Here's what to do:</p>
+<p>
+1. Disable UCB CAS by unchecking its entry at /admin/modules and clicking submit (or by using drush).<br />
+2. (Do not tell Drupal to "uninstall" UCB CAS. Also do not "uninstall" the CAS module. By this we mean do not use the "Uninstall" tab which is available at the /admin/modules path when you are logged into your site as an administrator. Also do not use the drush pm-uninstall command to uninstall these modules.)<br />
+3. Using your file manager simply remove the ucb_cas folder from your site (look under /sites/all/modules or /profiles).<br />
+4. Check that you have added and enabled the other modules required by UC Berkeley CAS to your site. (These modules (cas, cas_attributes, ldap...) might already be in the ucberkeley_cas folder.)<br />
+5. Enable UC Berkeley CAS.<br />
+6. Run update.php.<br />
+</p>
+EOT;
+
+  $update_ucb_envconf_message = <<<EOT
+<p>The module UCB Berkeley CAS (ucberkeley_cas) requires version 2.0 or later of UC Berkeley Environment Configurations. An older version of UC Berkeley Environment Configurations has been detected on this site.</p>
+
+<p>Here's what to do:</p>
+<p>
+1. Disable UC Berkeley Environment Configurations by un-checking its entry at /admin/modules and clicking submit (or by using drush).<br />
+2. Download <a href="https://github.com/bwood/ucberkeley_envconf-7">the latest version of UC Berkeley Environment Configurations</a>.<br />
+3. Using your file manager simply remove the ucb_envconf folder from your site (look under /sites/all/modules or /profiles).<br />
+4. Unpack the new version of ucberkeley_envconf and copy it into /sites/all/modules (or your preferred module directory.) <br />
+5. Enable ucberkeley_envconf. (Running update.php is not required.)
+</p>
+
+<p>At this point your site will be using the latest version of UC Berkeley Environment Configurations.</p>
+
+<p>(If you remove the ucb_envconf folder without first telling Drupal to <strong>disable</strong> UC Berkeley Environment Configurations, you will continue to see this message. If this happens replace the folder and follow the steps above.)</p>
+
+EOT;
+
+  if ($phase == 'install') {
+
+    if (module_exists('ucb_envconf')) {
+      /*
+       * The 2.x version of ucb_envconf will be called ucberkeley_envconf. So once the old version is disabled
+       * and removed this requirement error won't be triggered.  i.e. we don't need to check for a specific version
+       * of ucb_envconf.
+       */
+      $requirements['ucberkeley_cas'] = array(
+        'title' => $t('UC Berkeley CAS'),
+        'severity' => REQUIREMENT_ERROR,
+        'description' => $t($update_ucb_envconf_message),
+      );
+    }
+
+    if (module_exists('ucb_cas')) {
+      $requirements['ucberkeley_cas'] = array(
+        'title' => $t('UC Berkeley CAS'),
+        'severity' => REQUIREMENT_ERROR,
+        'description' => $t($update_message),
+      );
+    }
+
+    // Warn users about newer versions of cas.
+    $cas_path = drupal_get_path('module', 'cas');
+    if ($cas_path !== '') {
+      $cas_info = drupal_parse_info_file($cas_path . '/cas.info');
+      $cas_version = ucberkeley_cas_extract_version($cas_info['version']);
+      if (version_compare($cas_version, $cas_req_version, '!=')) {
+        $requirements['ucberkeley_cas'] = array(
+          'title' => $t('UC Berkeley CAS'),
+          'severity' => REQUIREMENT_WARNING,
+          'description' => $t('UC Berkeley CAS has been tested with the CAS module version @version. You have installed cas-@installed_version. Please note that UC Berkeley CAS has not been tested with this later version of CAS.module', array(
+            '@version' => $cas_req_version,
+            '@path' => $cas_path,
+            '@installed_version' => $cas_version
+          )),
+        );
+      }
+    }
+
+    // require a specific version of ldap (ldap_servers)
+    $ldap_path = drupal_get_path('module', 'ldap_servers');
+    if ($ldap_path !== '') {
+      $ldap_info = drupal_parse_info_file($ldap_path . '/ldap_servers.info');
+      $ldap_version = ucberkeley_cas_extract_version($ldap_info['version']);
+      if (version_compare($ldap_version, $ldap_req_version, '!=')) {
+        $requirements['ucberkeley_cas'] = array(
+          'title' => $t('UC Berkeley CAS'),
+          'severity' => REQUIREMENT_ERROR,
+          'description' => $t('UC Berkeley CAS requires the LDAP module to be at version @version. (ldap_servers-@installed_version was found at the path: @path)', array(
+            '@version' => $ldap_req_version,
+            '@path' => $ldap_path,
+            '@installed_version' => $ldap_version
+          )),
+        );
+      }
+    }
+
+    // require a specific version of cas_attributes.
+    $cas_attributes_path = drupal_get_path('module', 'cas_attributes');
+    if ($cas_attributes_path !== '') {
+      $cas_attributes_info = drupal_parse_info_file($cas_attributes_path . '/cas_attributes.info');
+      $cas_attributes_version = ucberkeley_cas_extract_version($cas_attributes_info['version']);
+      if (version_compare($cas_attributes_version, $cas_attributes_req_version, '!=')) {
+        $requirements['ucberkeley_cas'] = array(
+          'title' => $t('UC Berkeley CAS'),
+          'severity' => REQUIREMENT_ERROR,
+          'description' => $t('UC Berkeley CAS requires the CAS Attributes to be at version @version. (cas_attributes-@installed_version was found at the path: @path)', array(
+            '@version' => $cas_attributes_req_version,
+            '@path' => $cas_attributes_path,
+            '@installed_version' => $cas_attributes_info['version']
+          )),
+        );
+      }
+    }
+
+    return $requirements;
+  }
+}
+
+function ucberkeley_cas_extract_version($drupal_version) {
+  preg_match("/(\d+\.\d+[\.\d]{0,3}[-alphbetrc\.\d]{0,6})/", $drupal_version, $matches);
+  if (count($matches) > 1) {
+    return $matches[1];
+  }
+  return NULL;
+}
+
+/**
+ * Implementation of hook_install
+ */
+function ucberkeley_cas_install() {
+
+  //Create alias: enforce use of /caslogout
+  $alias = array('source' => 'caslogout', 'alias' => 'user/logout');
+  path_save($alias);
+
+  //Some friendly messages
+  $login_path = 'cas';
+  $admin_ucbcas_path = 'admin/config/people/ucberkeley_cas';
+
+  if (variable_get('clean_url', 0) == 0) {
+    drupal_set_message(t('Clean URLs are disabled on this site.  Consider enabling them at /?q=admin/config/search/clean-urls.'), 'warning');
+    //drush-friendly link
+    drupal_set_message(t("<em>Unauthenticated</em> users can now login via CAS at the path ?q=@login_path.", array("@login_path" => $login_path)));
+    drupal_set_message(t('Please follow the instructions to create a CalNet-enabled administrator: ' . l('http://uc-berkeley-cas.readthedocs.io/en/latest/#setup-a-calnet-authenticated-administrator', 'http://uc-berkeley-cas.readthedocs.io/en/latest/#setup-a-calnet-authenticated-administrator')));
+    drupal_set_message(t('If you will host this site on Pantheon, please see: ' . l('http://uc-berkeley-cas.readthedocs.io/en/latest/envconf/', 'http://uc-berkeley-cas.readthedocs.io/en/latest/envconf/')));
+    drupal_set_message(t("View UC Berkeley CAS recommendations at the path ?q=@admin_ucbcas_path", array("@admin_ucbcas_path" => $admin_ucbcas_path)));
+  }
+  else {
+    //drush-friendly link
+    drupal_set_message(t("<em>Unauthenticated</em> users can now login via CAS at the path /@login_path.", array("@login_path" => $login_path)));
+    drupal_set_message(t('Please follow the instructions to create a CalNet-enabled administrator: ' . l('http://uc-berkeley-cas.readthedocs.io/en/latest/#setup-a-calnet-authenticated-administrator', 'http://uc-berkeley-cas.readthedocs.io/en/latest/#setup-a-calnet-authenticated-administrator')));
+    drupal_set_message(t('If you will host this site on Pantheon, please see: ' . l('http://uc-berkeley-cas.readthedocs.io/en/latest/envconf/', 'http://uc-berkeley-cas.readthedocs.io/en/latest/envconf/')));
+    drupal_set_message(t('View UCB Berkeley CAS recommendations at ') . l(t("/@admin_ucbcas_path", array("@admin_ucbcas_path" => $admin_ucbcas_path)), $admin_ucbcas_path) . '.');
+  }
+  // Set a flag so that we know installation has just completed.  Process the flag in ucberkeley_cas_init()
+  $_SESSION['ucberkeley_cas_installed'] = TRUE;
+
+}
+
+/**
+ * Implementation of hook_post_features_enable_feature.
+ */
+function ucberkeley_cas_post_features_enable_feature($component) {
+  if ($component == 'variable') {
+    // Make sure user1 has a display name field.
+    ucberkeley_cas_set_user1_display_name();
+  }
+}
+
+
+/**
+ * Implementation of hook_uninstall
+ */
+function ucberkeley_cas_uninstall() {
+  //delete alias: enforce use of /caslogout
+  $alias = array('source' => 'caslogout', 'alias' => 'user/logout');
+  path_delete($alias);
+}
+
+function ucberkeley_cas_hook_update_dependencies() {
+  // Make our feature revert (7302) run after all of the update hooks in the
+  // submodules. The main issue are the cas_attributes updates, which may be affecting the cas_attributes variable.
+  $dependencies['ucberkeley_cas'][7303] = array(
+    'cas_attributes' => 7101,
+    'cas' => 7102,
+    'ldap_servers' => 7207,
+  );
+  return $dependencies;
+}
+
+/**
+ * Revert ucberkeley_cas.feature
+ */
+function ucberkeley_cas_update_7000(&$sandbox) {
+  $messages = array();
+
+  // cas_attributes was moved from defaultconfig to strongarm. A revert is
+  // needed to ensure that the value is set when updating a site.
+  features_revert(array('ucberkeley_cas' => array('variable')));
+
+  return implode('<br />', $messages);
+}
+
+
+/**
+ * Set ldap_servers connection to TLS.
+ */
+function ucberkeley_cas_update_7301() {
+  $rows = db_update('ldap_servers')
+    ->fields(array(
+      'tls' => 1
+    ))->condition('name', 'ldap.berkeley.edu', '=')->execute();
+
+  if ($rows == 0) {
+    watchdog('ucberkeley_cas', t("TLS value for LDAP server ldap.berkeley.edu was not updated."), array(), WATCHDOG_WARNING);
+  }
+}
+
+/**
+ * If Pantheon hosting is detected set the cas_cert variable, otherwise warn the user.
+ */
+function ucberkeley_cas_update_7302() {
+
+  if (array_key_exists('PANTHEON_ENVIRONMENT', $_ENV)) {
+    // Pantheon's certificate authority bundle will be at this path in all environments.
+    variable_set('cas_cert', '/etc/ssl/certs/ca-bundle.crt');
+  }
+  else {
+    $cas_cert_warning = "Security best practice: Visit /admin/config/people/cas and set 'Certificate Authority PEM Certificate' to the path of the certificate authority bundle on your server.";
+    watchdog(WATCHDOG_TYPE, $cas_cert_warning, array(), WATCHDOG_WARNING);
+  }
+}
+
+/**
+ * Revert ucberkeley_cas.feature. Config has moved from defaultconfig to strongarm.
+ */
+function ucberkeley_cas_update_7303() {
+  $messages = array();
+
+  // variables moved from defaultconfig to strongarm
+  // - cas_attributes_relations
+  // - cas_attributes_ldap_server
+  // - cas_attributes_sync_every_login
+  // - cas_version
+  features_revert(array(
+    'ucberkeley_cas' => array(
+      'defaultconfig',
+      'variable'
+    )
+  ));
+
+  // Create old cas_attributes variable which is needed by cas_attributes_update_7101 and then deleted by that same update hook.
+  // Implementing hook_update_dependencies is a better solution, but it fails to make this update run after cas_attributes_update_7101.
+  $cas_attributes = array(
+    'sync_every_login' => '0',
+    'relations' => array(
+      'name' => '[cas:ldap:displayname]',
+      'mail' => '[cas:ldap:mail]'
+    ),
+    'ldap' => array(
+      'server' => 'ucb_prod'
+    )
+  );
+  variable_set('cas_attributes', $cas_attributes);
+}
+
+/**
+ * Enable Realname. Revert ucberkeley_cas feature. Revert user views.
+ */
+function ucberkeley_cas_update_7401() {
+  module_enable(array('realname'));
+  drupal_flush_all_caches();
+  features_revert(array(
+    'ucberkeley_cas' => array(
+      //'defaultconfig',
+      'field_base',
+      'field_instance',
+      //'user_permission',
+      'variable'
+    )
+  ));
+}
+
+/**
+ * Hide the realname field on the user bundle since it duplicates field_display_name.
+ */
+function ucberkeley_cas_update_7402() {
+  // Get settings for user bundle.
+  $bundle_settings = field_bundle_settings('user', 'user');
+  // Set visibility for realname field to Hidden.
+  $bundle_settings['extra_fields']['display']['realname']['default']['visible'] = 0;
+  // Add weight to prevent a notice on non-OB sites.
+  $bundle_settings['extra_fields']['display']['realname']['default']['weight'] = 0;
+  // Save updated bundle settings.
+  field_bundle_settings('user', 'user', $bundle_settings);
+}
+
+/**
+ * Temporarily unset pathauto_user_pattern to speed up the big user update we are about to do.
+ */
+function ucberkeley_cas_update_7403() {
+  if (module_exists('pathauto')) {
+    variable_set('pathauto_user_pattern', '');
+  }
+}
+
+
+/**
+ * Update the users table: Replace user.name with CAS UID. Move user first and lastname to field_display_name.
+ */
+function ucberkeley_cas_update_7404(&$sandbox) {
+
+  // Use the sandbox at your convenience to store the information needed
+  // to track progression between successive calls to the function.
+  if (!isset($sandbox['progress'])) {
+    // The count of nodes visited so far.
+    $sandbox['progress'] = 0;
+    // Total nodes that must be visited.
+    // Skip Anonymous
+    $sandbox['max'] = db_query('SELECT COUNT(uid) FROM {users} WHERE uid NOT IN (0)')->fetchField();
+    // A place to store messages during the run.
+    $sandbox['messages'] = array();
+    // Last node read via the query.
+    $sandbox['current_user'] = 0;
+  }
+  $limit = 20;
+
+  $sid = 'ucb_prod';
+  $ldap_server = new LdapServer($sid);
+  $attributes = array(
+    'berkeleyEduFirstName',
+    'berkeleyEduLastName',
+    'givenname',
+    'sn'
+  );
+
+  $query = db_select('users', 'u')
+    ->fields('u', array('uid', 'name', 'init'))
+    // Skip Anonymous
+    ->condition('u.uid', array(0), 'NOT IN')
+    ->orderBy('u.uid', 'ASC')
+    ->condition('u.uid', $sandbox['current_user'], '>')
+    ->range(0, $limit);
+
+  $result = $query->execute();
+
+  foreach ($result as $data) {
+
+    // Records with a NULL init field are users that didn't login via CAS
+    // Non numeric init records (e.g. email addresses) may exist.  Maybe these were logins that happened before cas.module was enabled?
+    $cas_uid_exists = TRUE;
+    if (empty($data->init) || !is_numeric($data->init)) {
+      $msg = t("No CAS UID for @name. Maybe this user did not authenticate via CAS.", array('@name' => $data->name));
+      watchdog(WATCHDOG_TYPE, $msg, array(), WATCHDOG_WARNING);
+      $cas_uid_exists = FALSE;
+    }
+
+    // Remove ", BA" and ", PhD" etc from ends of names:
+    // Deciding against this clean up.  DIY users might not like it. Not necessary since commas are not a problem in Display Name.
+    // $data->name = preg_replace("/,.*/", "", $data->name);
+
+    $wrapper = entity_metadata_wrapper('user', $data->uid);
+    // If name is already set to the CAS UID (there could have been an aborted earlier run) don't try to update it again because this will cause a PDO Exception.
+    if (!is_numeric($data->name)) {
+
+      // If we didn't find a CAS UID, don't update user.name.
+      if ($cas_uid_exists) {
+        $wrapper->name->set($data->init);
+      }
+      $wrapper->field_display_name->set($data->name);
+      $msg = t("New name assigned for @cas_name: @display_name", array(
+        '@cas_name' => $data->init,
+        '@display_name' => $wrapper->field_display_name->value()
+      ));
+      $wrapper->save();
+    }
+    elseif (!$wrapper->field_display_name->value()) {
+      $wrapper->field_display_name->set($data->name);
+      $wrapper->save();
+    }
+    else {
+      $msg = t("CAS UID (@cas_name) already in correct field and Display Name exists.", array(
+        '@cas_name' => $data->init,
+        '@display_name' => $data->name
+      ));
+    }
+
+    watchdog(WATCHDOG_TYPE, $msg, array(), WATCHDOG_INFO);
+    //drupal_set_message($msg);
+    $sandbox['messages'][] = $msg;
+    // Update our progress information.
+    $sandbox['progress']++;
+    $sandbox['current_user'] = $data->uid;
+    unset($data);
+  }
+
+  $sandbox['#finished'] = ($sandbox['progress'] >= $sandbox['max']) ? TRUE : ($sandbox['progress'] / $sandbox['max']);
+  if ($sandbox['#finished'] === TRUE) {
+    // hook_update_N() may optionally return a string which will be displayed
+    // to the user.
+    //$final_message = '<ul><li>' . implode('</li><li>', $sandbox['messages']) . "</li></ul>";
+    $final_message = implode("\n", $sandbox['messages']);
+    return t("Users table update complete:\n<pre>\n@message\n</pre>\n", array('@message' => $final_message));
+  }
+
+  // On some Pantheon-hosted sites admin_views_user and and control_users views fail to show new fields.
+  drupal_flush_all_caches();
+}
+
+/**
+ * Restore pathauto_user_pattern and update pathauto user aliases.
+ */
+function ucberkeley_cas_update_7405() {
+  if (module_exists('pathauto') && module_exists('realname')) {
+    variable_set('pathauto_user_pattern', 'users/[user:name]');
+    $users = entity_load('user');
+    pathauto_user_update_alias_multiple(array_keys($users), 'bulkupdate');
+  }
+}
+
+/**
+ * OPENUCB-1797: Enable 'contains' autocomplete in dashboard > content view.
+ */
+function ucberkeley_cas_update_7406() {
+  $views = array('admin_views_node');
+  ucberkeley_cas_invalidate_views_cache($views);
+  ucberkeley_cas_revert_views($views);
+}
+
+
+/**
+ * OPENUCB-1794: Clean up superfluous paths that were mistakenly added to the site variable cas_paths.
+ */
+function ucberkeley_cas_update_7407() {
+  if (array_key_exists('PANTHEON_SITE_NAME', $_ENV)) {
+    // Don't remove these paths on the websolutions site.
+    if ($_ENV['PANTHEON_SITE_NAME'] == 'websolutions-ob') {
+      return t("Skipping @function for websolutions-ob.", array('@function' => __FUNCTION__));
+    }
+  }
+
+  $paths_filtered = array();
+  $paths = trim(variable_get('cas_pages', ''));
+  $paths = explode("\n", $paths);
+
+  $paths_filtered = array_filter($paths, function ($value) {
+    $exclude = array(
+      'web-hosting/launch-your-pantheon-site',
+      'web-hosting/get-open-berkeley',
+      'web-hosting/my-sites',
+      'web-hosting-pantheon/upgrade-paid-plan',
+      'web-hosting-pantheon/update-plan-or-stop-billing'
+    );
+
+    $value = trim($value);
+    if (in_array($value, $exclude) || empty($value)) {
+      return FALSE;
+    }
+    return TRUE;
+  });
+  variable_set('cas_pages', implode("\n", $paths_filtered));
+}
+
+/**
+ * Make sure user1 has a display name (realname) value.
+ */
+function ucberkeley_cas_set_user1_display_name() {
+  if (!module_exists('realname')) {
+    return NULL;
+  }
+  $wrapper = entity_metadata_wrapper('user', 1);
+
+  $name = 'admin';
+  if (variable_get('install_profile', '') == 'openberkeley') {
+    $name = 'ucbadmin';
+  }
+
+  // This is called post feature enable and sometimes we get the undesirable placeholder string.
+  if ($wrapper->name->value() && strpos($wrapper->name->value(), 'placeholder') === FALSE) {
+    $name = $wrapper->name->value();
+  }
+
+  if (!$wrapper->field_display_name->value()) {
+    $wrapper->field_display_name->set($name);
+    $wrapper->save();
+    watchdog(WATCHDOG_TYPE, "Display name set to @name for uid 1.", array('@name' => $name), WATCHDOG_NOTICE);
+  }
+}
+
+/**
+ * OPENUCB-1802: Enuser that user1 has a Display Name.
+ */
+function ucberkeley_cas_update_7408() {
+  ucberkeley_cas_set_user1_display_name();
+}
+

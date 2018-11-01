@@ -1,20 +1,24 @@
 <header>
-    <div>
-        <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top" <?php if (user_is_logged_in()): ?> style="margin-top: 28px; z-index: 990;" <?php endif; ?>>
+    <div>        
+        <nav class="navbar navbar-expand-sm navbar-dark bg-black text-white container-fluid" id="top-header-nav">
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <?php print render($page['menu_top']); ?>
+            </div>
+        </nav>        
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark shadow-sm container-fluid" id="main-menu">
             <a class="navbar-brand" href="/">Complit</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>
-
             <div class="collapse navbar-collapse" id="navbarsExampleDefault">
-                <?php print render($page['menu_top']); ?>
+                <?php print render($page['menu_bottom']); ?>
             </div>
         </nav>
     </div>
 </header>
 
 <main role="main">
-    <div class="shadow">
+    <div class="shadow-sm">
         <?php print render($page['sliding']); ?> 
     </div>       
     <div class="wrapper">

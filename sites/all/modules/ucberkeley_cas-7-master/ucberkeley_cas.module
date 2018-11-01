@@ -1,0 +1,590 @@
+<?php
+/**
+ * @file
+ * Code for the UC Berkeley CAS feature.
+ */
+
+include_once 'ucberkeley_cas.features.inc';
+define('CHANGE_TEXT', '<span style="color:red">consider changing your settings.</span>');
+define('GOOD_TEXT', '<span style="color:green">your settings are probably good.</span>');
+
+/**
+ * Implementation of hook_init()
+ * If overlay.module is enabled, make sure that our hook_install messages are displayed
+ */
+function ucberkeley_cas_init() {
+  if (!module_exists('overlay') || (!isset($_SESSION)) || (!is_array($_SESSION))) {
+    return;
+  }
+  if ((array_key_exists('ucberkeley_cas_install_messages', $_SESSION)) && (!array_key_exists('messages', $_SESSION))) {
+    foreach ($_SESSION['ucberkeley_cas_install_messages']['status'] as $msg) {
+      drupal_set_message($msg);
+    }
+    unset($_SESSION['ucberkeley_cas_install_messages']);
+  }
+  elseif ((array_key_exists('messages', $_SESSION)) && (is_array($_SESSION['messages'])) && (array_key_exists('ucberkeley_cas_installed', $_SESSION))) {
+    $_SESSION['ucberkeley_cas_install_messages'] = $_SESSION['messages'];
+    unset($_SESSION['ucberkeley_cas_installed']);
+  }
+}
+
+/**
+ * Implementation of hook_form_alter()
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
+function ucberkeley_cas_form_alter(&$form, &$form_state, $form_id) {
+  $x=1;
+  switch ($form_id) {
+    case 'user_profile_form':
+      if (user_access('administer users') && (variable_get('cas_hide_password', 0) == 1)) {
+        $account = $form['#user'];
+        if (!empty($account->cas_name)) {
+          $form['account']['pass']['#disabled'] = TRUE;
+          $form['account']['pass']['#description'] = '<strong>Since this is a CAS user, their password can\'t be changed.</strong> <a href="https://github.com/ucb-ist-drupal/ucberkeley_cas-7#users_cannot" target="_new">More info</a>.';
+        }
+      }
+      break;
+    case 'cas_add_user_form':
+      $form['account']['cas_name_txt']['#markup'] = 'To find the CAS User ID for a UC Berkeley employee visit the ' . l('CalNet Directory', 'https://calnet.berkeley.edu/directory/index.pl', array('attributes' => array('target' => '_blank'))) . ' and search for the person.  In your search results click on the person\'s name. At the top of the page you should see <em>Details for Jane Smith (UID: 111111)</em>. Copy that UID number and paste it into the CAS User ID box.';
+      $form['account']['cas_name']['#title'] = 'CAS User ID';
+      $form['account']['cas_name']['#description'] = 'In order to create a new CalNet (CAS) authenticated user, just enter the person\'s CAS UID here. ' . $form['account']['cas_name']['#description'];
+      break;
+  }
+}
+/**
+ * Implements hook_form_FORM_ID_alter() when editing the node form.
+ *
+ * Per https://www.drupal.org/node/985944#comment-6808736, we can't display
+ * the real name as the $form['author'['name'] value because the form wants
+ * the users.name value.  Change the title/description to make this a bit more
+ * clear to the user.
+ */
+function ucberkeley_cas_form_node_form_alter(&$form, &$form_state, $form_id) {
+  $user = user_load_by_name($form['author']['name']['#default_value']);
+  $form['author']['name']['#title'] .=  " <em>" . format_username($user) . "</em>. (Below is this user's ID.)";
+  $form['author']['name']['#description'] = "Begin typing a user's name to find the corresponding ID. " . $form['author']['name']['#description'];
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() when editing the file entity form.
+ *
+ * Same reason as ucberkeley_cas_form_node_form_alter().
+ */
+function ucberkeley_cas_form_file_entity_edit_alter(&$form, &$form_state, $form_id) {
+  $user = user_load_by_name($form['user']['name']['#default_value']);
+  $form['user']['name']['#title'] .=  " <em>" . format_username($user) . "</em>. (Below is this user's ID.)";
+  $form['user']['name']['#description'] = "Begin typing a user's name to find the corresponding ID. " . $form['user']['name']['#description'];
+}
+
+/**
+ * Implements hook_views_bulk_operations_form_alter().
+ */
+function ucberkeley_cas_views_bulk_operations_form_alter(&$form, &$form_state, $vbo) {
+  if ($form_state['step'] == 'views_bulk_operations_config_form') {
+    $operation = $form_state['operation'];
+
+    // Convert the 'Username' field on the 'Change author' operation to
+    // always be an autocomplete field, rather than select. (user.module 
+    // makes it a select field if the number of users is < 200.)
+    // We want this alter to happen even when the field is already an
+    // autocomplete text field because we are also changing #size to 60.
+    if ($operation->id() == 'action::node_assign_owner_action') {
+      $form['owner_name']['#type'] = 'textfield';
+      $form['owner_name']['#autocomplete_path'] = 'user/autocomplete';
+      $form['owner_name']['#size'] = 60;
+      $form['owner_name']['#maxlength'] = 128;
+      unset($form['owner_name']['#options']);
+    }
+  }
+}
+
+/**
+ * Implements hook_menu().
+ *
+ * Create a back door to prevent admin lockouts
+ */
+
+function ucberkeley_cas_menu() {
+  $items['user/admin_login'] = array(
+    'title' => 'Admin Login',
+    'page callback' => 'ucberkeley_cas_admin_login_page',
+    'access callback' => TRUE, // anonymous needs access to this path
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/config/people/ucberkeley_cas'] = array(
+    'title' => 'UC Berkeley CAS',
+    'description' => 'UC Berkeley CAS recommendations and review.',
+    'page callback' => 'ucberkeley_cas_admin',
+    'access arguments' => array('administer cas'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+function ucberkeley_cas_admin_login_page() {
+  global $user;
+  if ($user->uid) {
+    menu_set_active_item('user/' . $user->uid);
+    return menu_execute_active_handler(NULL, FALSE);
+  }
+  else {
+    //$form = drupal_get_form('user_login');
+    $form = drupal_get_form('ucberkeley_cas_admin_login');
+    return $form;
+  }
+
+}
+
+/**
+ *
+ * Page: Admin login back door
+ * @param $form
+ */
+function ucberkeley_cas_admin_login($form) {
+  include_once(drupal_get_path('module', 'user') . '/user.module');
+
+  drupal_set_message('Admins should login via Calnet whenever possible.  Unless this site is running https, this form is not secure. See README.md included with the ucberkeley_cas module for more information.', 'warning', FALSE);
+  // see user.module user_login_block()
+  $form['#action'] = url($_GET['q'], array('query' => drupal_get_destination()));
+  $form['#id'] = 'ucb-cas-admin-login-form';
+  $form['#validate'] = user_login_default_validators();
+  $form['#submit'][] = 'user_login_submit';
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Username'),
+    '#maxlength' => USERNAME_MAX_LENGTH,
+    '#size' => 15,
+    '#required' => TRUE,
+  );
+  $form['pass'] = array(
+    '#type' => 'password',
+    '#title' => t('Password'),
+    '#maxlength' => 60,
+    '#size' => 15,
+    '#required' => TRUE,
+  );
+  $form['request_password'] = array(
+    '#type' => 'item',
+    '#markup' => '<ul><li>' . l('Request new password', 'user/password') . ' (This will only work for users who do not login via CAS.)</ul></li>',
+  );
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Log in'),
+  );
+  return $form;
+}
+
+/**
+ * Page: UCB CAS admin page
+ */
+function ucberkeley_cas_admin() {
+
+  $out = '<h2>' . t('UC Berkeley CAS Configuration Review') . '</h2>';
+  $use_case_text = <<<EOT
+These are the most common ways Drupal is being used at UC Berkeley.  
+Think about which case applies to your site, and then consider the configuration
+recommentations below.
+EOT;
+  $out .= '<h3>' . t('Common Drupal Site Use Cases') . '</h3>';
+  $out .= t($use_case_text);
+  $out .= '<ol>';
+  $out .= '<li>' . t('Visitors to the site do not need to login. Site content is maintained by team of content editors.') . '</li>';
+  $out .= '<li>' . t('Visitors to the site need to login to post comments, write reviews, submit webforms, etc.') . '</li>';
+  $out .= '</ol>';
+
+
+  // Login blocks
+  // TODO make collapsible
+  // FIXME: Declare css and js in info file
+  drupal_add_js('misc/collapse.js');
+  drupal_add_js('misc/form.js');
+  $out .= ucberkeley_cas_fieldset('Login Blocks', ucberkeley_cas_login_blocks_recommendations());
+
+  // Logout caslogout
+  $out .= ucberkeley_cas_fieldset('More on UC Berkeley CAS', ucberkeley_cas_more_help());
+  return $out;
+}
+
+/**
+ * login blocks recommendations
+ */
+function ucberkeley_cas_login_blocks_recommendations() {
+  global $base_url;
+  $change_text = CHANGE_TEXT;
+  $good_text = GOOD_TEXT;
+
+  $login_blocks_no_link_why = "<p>This way there is no link encouraging people who shouldn't be logging in to your site to authenticate. This prevents unwanted accounts from being created on your site.</p>";
+
+  $login_blocks = ucberkeley_cas_login_blocks_check();
+  //$out .= '<h3>' . t('Login Blocks') . '</h3>';
+  //$out .= '<legend class="collapse-processed">' . t('Login Blocks') . '</legend>';
+  $login_blocks_text = <<<EOT
+Depending on your use case, you may or may not want to display a login block on your site.
+EOT;
+  $out = t($login_blocks_text);
+  $login_blocks_on_advice_on_1 = <<<EOT
+<b>If this site follows use case #1</b>,&nbsp;$change_text<br/>
+<ul>
+<li><a href="/admin/structure/block" target = "_new">Disable these login blocks</a> by setting Region to 'None' and saving the form. (Then reload this page).</li>
+<li>If you are using a custom theme, don't add a login link there.</li>
+<li>Inform your team of content editors that they can login at <b>$base_url/cas</b></li>
+</ul>
+	$login_blocks_no_link_why
+EOT;
+
+  $login_blocks_on_advice_on_2 = <<<EOT
+<b>If this site follows use case #2</b>,&nbsp;$good_text<br/>
+<ul>
+<li>Displaying these login blocks is probably appropriate.</li>
+<li>Additonally requiring a CAS login for certain nodes may be a good idea:</li>
+  <ul>
+  <li>For example if you have a webform at <b>node/1234</b> that requires the user to be logged in, you can add <b>node/1234</b>
+  to Redirection > Specific Pages, and select "Require CAS loogin for specific pages" on the <a href="/admin/config/people/cas" 
+  target = "_new">CAS settings page</a>.
+  </li> 
+  </ul>
+</ul>
+EOT;
+
+  $login_blocks_on_advice_off_1 = <<<EOT
+<b>If this site follows use case #1</b>,&nbsp;$good_text<br/>
+<ul>
+<li>(If you are using a custom theme, don't add a login link there.)</li>
+<li>Inform your team of content editors that they can login at <b>$base_url/cas</b></li>
+</ul>
+	$login_blocks_no_link_why
+EOT;
+
+  $login_blocks_on_advice_off_2 = <<<EOT
+<b>If this site follows use case #2</b>,&nbsp;$change_text<br/>
+<ul>
+<li>Since users need to authenticate to your site, you should consider <a href="/admin/structure/block" target = "_new">enabling a login block</a>. 
+(Make sure you have enabled the Core Block module.) Find the User Login block and set a region for it. (Then reload this page.)</li>
+<li>Alternatively, add a login link via your theme.</li>
+EOT;
+
+
+  if (count($login_blocks) > 0) {
+    $out .= '<h4>' . t('Site Status: Login blocks enabled') . '</h4>';
+    $out .= '<table>';
+    $out .= '<tr><th>Block Name</th><th>Region</th><th>Module Providing Block</th></tr>';
+    while (list($k, $v) = each($login_blocks)) {
+      $out .= '<tr>';
+      $out .= '<td>' . $v[0] . '</td>';
+      $out .= '<td>' . $v[1] . '</td>';
+      $out .= '<td>' . $k . '</td>';
+      $out .= '</tr>';
+    }
+
+    $out .= '</table>';
+    $out .= '<h4>Recommentations</h4>';
+    $out .= t($login_blocks_on_advice_on_1);
+    $out .= t($login_blocks_on_advice_on_2);
+  }
+  else {
+    $out .= '<h4><i>' . t('Site Status: Login blocks NOT enabled') . '</i></h4>';
+    $out .= '<h4>Recommentations</h4>';
+    $out .= t($login_blocks_on_advice_off_1);
+    $out .= t($login_blocks_on_advice_off_2);
+
+  }
+  return $out;
+}
+
+/**
+ * Check login blocks
+ */
+function ucberkeley_cas_login_blocks_check() {
+  $login_blocks = array();
+  // D7: block.module could be disabled.
+  if (!module_exists('block')) {
+    return $login_blocks;
+  }
+  $theme = variable_get('theme_default', '');
+  $blocks = _block_rehash($theme);
+  foreach ($blocks as $b) {
+    if ((stripos($b['info'], 'login') !== FALSE) && ($b['region'] != -1)) {
+      $login_blocks[$b['module']] = array($b['info'], $b['region']);
+    }
+  }
+  return $login_blocks;
+}
+
+/**
+ * Return a fieldset
+ */
+function ucberkeley_cas_fieldset($title, $content, $collapsible = TRUE, $expanded = TRUE) {
+  $fieldset = array(
+    'element' => array(
+      '#theme' => 'fieldset',
+      '#title' => $title,
+      '#description' => $content,
+      '#children' => NULL,
+      '#collapsible' => $collapsible,
+      /*
+      // resorted to drupal_add_js() above. improve?
+      '#attached' => array(
+        'js' => array(
+          'misc/form.js',
+          'misc/collapse.js',
+        ),
+      ),
+      */
+      '#attributes' => array(
+        'class' => array('collapsible', $expanded),
+      ),
+    )
+  );
+  $html = theme_fieldset($fieldset);
+  return $html;
+}
+
+/**
+ * Logout info
+ */
+function ucberkeley_cas_more_help() {
+  $out = <<<EOT
+The <a href="https://github.com/ucb-ist-drupal/ucberkeley_cas-7/tree/master" target="_new">UC Berkeley CAS README</a> contains detailed information about using this module.
+EOT;
+
+  return $out;
+}
+
+/**
+ * Implements hook_views_default_views_alter().
+ *
+ * Alter views to use realname value instead of username.
+ *
+ * @param $views
+ */
+function ucberkeley_cas_views_default_views_alter(&$views) {
+  // Modify Admin Views' Adminminstration: Users view
+  if (array_key_exists('admin_views_user', $views)) {
+    $admin_views_user_column_order = array(
+      'views_bulk_operations',
+      'realname',
+      'name',
+      'mail',
+      'status',
+      'rid',
+      'created',
+      'access',
+      'edit_node',
+      'cancel_node',
+    );
+    $admin_views_user_filter_order = array(
+      'realname',
+      'mail',
+      'status',
+      'rid',
+    );
+
+    $handler =& $views['admin_views_user']->display['default']->handler;
+    $handler->display->display_options['style_options']['columns']['realname'] = 'realname';
+    $handler->display->display_options['style_options']['columns']['mail'] = 'realname';
+    // Order the columns correctly
+    $handler->display->display_options['style_options']['columns'] = array_merge(array_flip($admin_views_user_column_order), $handler->display->display_options['style_options']['columns']);
+    $handler->display->display_options['style_options']['info']['realname'] = array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '<br />',
+      'empty_column' => 0,
+    );
+    // Order the columns
+    $handler->display->display_options['style_options']['info'] = array_merge(array_flip($admin_views_user_column_order), $handler->display->display_options['style_options']['info']);
+    // Field: Realname: Real name
+    $handler->display->display_options['fields']['realname']['id'] = 'realname';
+    $handler->display->display_options['fields']['realname']['table'] = 'realname';
+    $handler->display->display_options['fields']['realname']['field'] = 'realname';
+    $handler->display->display_options['fields']['realname']['label'] = 'Name';
+    // Field: User: Name
+    $handler->display->display_options['fields']['name']['exclude'] = TRUE;
+    // Order the columns
+    $handler->display->display_options['fields'] = array_merge(array_flip($admin_views_user_column_order), $handler->display->display_options['fields']);
+
+    /* Filter criterion: Realname: Name */
+    unset($handler->display->display_options['filters']['name']);
+    $handler->display->display_options['filters']['realname']['id'] = 'realname';
+    $handler->display->display_options['filters']['realname']['table'] = 'realname';
+    $handler->display->display_options['filters']['realname']['field'] = 'realname';
+    $handler->display->display_options['filters']['realname']['operator'] = 'contains';
+    $handler->display->display_options['filters']['realname']['group'] = 1;
+    $handler->display->display_options['filters']['realname']['exposed'] = TRUE;
+    $handler->display->display_options['filters']['realname']['expose']['operator_id'] = 'realname_op';
+    $handler->display->display_options['filters']['realname']['expose']['label'] = 'Name';
+    $handler->display->display_options['filters']['realname']['expose']['operator'] = 'realname_op';
+    $handler->display->display_options['filters']['realname']['expose']['identifier'] = 'realname';
+    $handler->display->display_options['filters']['realname']['expose']['remember'] = TRUE;
+    // Order the columns
+    $handler->display->display_options['filters'] = array_merge(array_flip($admin_views_user_filter_order), $handler->display->display_options['filters']);
+  }
+
+  // Modify Admin Views' Adminminstration: Nodes view
+  if (array_key_exists('admin_views_node', $views)) {
+
+    $realname_field = array(
+      'id' => 'realname',
+      'table' => 'realname',
+      'field' => 'realname',
+      'relationship' => 'uid',
+      'exclude' => TRUE
+    );
+
+    /* Field: Realname: Real name */
+    // Default display
+    $handler =& $views['admin_views_node']->display['default']->handler;
+    $handler->display->display_options['fields']['realname'] = $realname_field;
+    // Page display
+    $page_handler =& $views['admin_views_node']->display['page_1']->handler;
+    $page_handler->display->display_options['fields']['realname'] = $realname_field;
+
+    // Remove user filter
+    unset($handler->display->display_options['filters']['uid']);
+
+    /* Filter criterion: Realname: Name */
+    $handler->display->display_options['filters']['realname']['id'] = 'realname';
+    $handler->display->display_options['filters']['realname']['table'] = 'realname';
+    $handler->display->display_options['filters']['realname']['field'] = 'realname';
+    $handler->display->display_options['filters']['realname']['relationship'] = 'uid';
+    $handler->display->display_options['filters']['realname']['operator'] = 'contains';
+    $handler->display->display_options['filters']['realname']['exposed'] = TRUE;
+    $handler->display->display_options['filters']['realname']['expose']['operator_id'] = 'realname_op';
+    $handler->display->display_options['filters']['realname']['expose']['label'] = 'Author';
+    $handler->display->display_options['filters']['realname']['expose']['operator'] = 'realname_op';
+    $handler->display->display_options['filters']['realname']['expose']['identifier'] = 'realname';
+    $handler->display->display_options['filters']['realname']['expose']['remember_roles'] = array(
+      2 => '2',
+      1 => 0,
+      6 => 0,
+      4 => 0,
+      7 => 0,
+      5 => 0,
+      3 => 0,
+    );
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_filter'] = 1;
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_items'] = '10';
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_min_chars'] = '0';
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_field'] = 'realname';
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_raw_suggestion'] = 1;
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_raw_dropdown'] = 1;
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_dependent'] = 0;
+
+    $exposed_filter_order = array(
+      'title',
+      'type',
+      'realname',
+      'status',
+      'vid'
+    );
+    // Order the columns
+    $handler->display->display_options['filters'] = array_merge(array_flip($exposed_filter_order), $handler->display->display_options['filters']);
+  }
+    // Modify Total Control's: control_users View
+  if (array_key_exists('control_users', $views)) {
+    $control_user_column_order = array(
+      'views_bulk_operations',
+      'realname',
+      'name',
+      'mail',
+      'rid',
+      'created',
+      'login',
+      'edit_node',
+    );
+    $control_user_filters_order = array(
+      'realname',
+      'mail',
+      'rid',
+    );
+
+    $handler =& $views['control_users']->display['default']->handler;
+    $handler->display->display_options['style_options']['columns']['realname'] = 'realname';
+    // Order the columns correctly.
+    $handler->display->display_options['style_options']['columns'] = array_merge(array_flip($control_user_column_order), $handler->display->display_options['style_options']['columns']);
+    // Make sure the vbo value is set.
+    $handler->display->display_options['style_options']['columns']['views_bulk_operations'] = 'views_bulk_operations';
+    $handler->display->display_options['style_options']['info']['realname'] = array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '<br />',
+      'empty_column' => 0,
+    );
+    // Order the columns
+    $handler->display->display_options['style_options']['info'] = array_merge(array_flip($control_user_column_order), $handler->display->display_options['style_options']['info']);
+    // Field: Realname: Real name
+    $handler->display->display_options['fields']['realname']['id'] = 'realname';
+    $handler->display->display_options['fields']['realname']['table'] = 'realname';
+    $handler->display->display_options['fields']['realname']['field'] = 'realname';
+    $handler->display->display_options['fields']['realname']['label'] = 'Name';
+    // Field: User: Name
+    $handler->display->display_options['fields']['name']['exclude'] = TRUE;
+    // Order the columns
+    $handler->display->display_options['fields'] = array_merge(array_flip($control_user_column_order), $handler->display->display_options['fields']);
+
+    /* Filter criterion: Realname: Name */
+    unset($handler->display->display_options['filters']['uid_1']);
+    $handler->display->display_options['filters']['realname']['id'] = 'realname';
+    $handler->display->display_options['filters']['realname']['table'] = 'realname';
+    $handler->display->display_options['filters']['realname']['field'] = 'realname';
+    $handler->display->display_options['filters']['realname']['operator'] = 'contains';
+    $handler->display->display_options['filters']['realname']['group'] = 1;
+    $handler->display->display_options['filters']['realname']['exposed'] = TRUE;
+    $handler->display->display_options['filters']['realname']['expose']['operator_id'] = 'realname_op';
+    $handler->display->display_options['filters']['realname']['expose']['label'] = 'Name';
+    $handler->display->display_options['filters']['realname']['expose']['operator'] = 'realname_op';
+    $handler->display->display_options['filters']['realname']['expose']['identifier'] = 'realname';
+    $handler->display->display_options['filters']['realname']['expose']['remember_roles'] = array(
+      2 => '2',
+      1 => 0,
+      4 => 0,
+      5 => 0,
+      8 => 0,
+      6 => 0,
+      7 => 0,
+    );
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_filter'] = 1;
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_items'] = '10';
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_min_chars'] = '0';
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_field'] = 'realname';
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_raw_suggestion'] = 1;
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_raw_dropdown'] = 1;
+    $handler->display->display_options['filters']['realname']['expose']['autocomplete_dependent'] = 0;
+    // Order the columns
+    $handler->display->display_options['filters'] = array_merge(array_flip($control_user_filters_order), $handler->display->display_options['filters']);
+  }
+}
+
+/**
+ * Revert views.
+ * @param array $view_names
+ */
+function ucberkeley_cas_revert_views(array $view_names) {
+  foreach ($view_names as $view_name) {
+    // Revert the view
+    $view = views_get_view($view_name);
+    if ($view->type == t('Overridden')) {
+      // Revert the view.
+      $view->delete();
+      // Clear its cache.
+      ctools_include('object-cache');
+      ctools_object_cache_clear('view', $view->name);
+    }
+  }
+}
+
+/**
+ * Clear the views cache.
+ * @param array $view_names
+ */
+function ucberkeley_cas_invalidate_views_cache(array $view_names) {
+  foreach ($view_names as $view_name) {
+    cache_clear_all('ctools_export:views_view:' . $view_name, 'cache_views', TRUE);
+    cache_clear_all($view_name, 'cache_views_data', TRUE);
+  }
+}
+

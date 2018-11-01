@@ -1,0 +1,69 @@
+/* Add link underline on hover */
+
+/* Increase contrast for link colors */
+a {
+    color: #236d9e;
+}
+a:hover {
+    color: #236d9e;
+    text-decoration: underline;
+}
+
+/* left menu increase contrast for active page links */
+.wy-menu-vertical li.current a {
+    color: #000000;
+}
+.wy-menu-vertical li.current a:hover,
+.wy-menu-vertical li.current a:focus {
+    background: #FFFFFF;
+}
+
+/* left menu increase contrast for non-active page links */
+.wy-menu-vertical a {
+    color: #FFFFFF;
+}
+.wy-menu-vertical a:hover,
+.wy-menu-vertical a:focus {
+    background: #b3b3b3;
+    color: #000000;
+}
+
+/* Title hover color */
+.wy-side-nav-search>a:hover, .wy-side-nav-search .wy-dropdown>a:hover {
+    background: #FFFFFF;
+}
+
+/*  Hide skip nav and form label. */
+.skip {
+    position: absolute;
+    top: -1000px;
+    left: -1000px;
+    height: 1px;
+    width: 1px;
+    text-align: left;
+    overflow: hidden;
+}
+a.skip:active,
+a.skip:focus,
+a.skip:hover {
+    left: 0;
+    top: 0;
+    width: auto;
+    height: auto;
+    overflow: visible;
+}
+
+/* mkdocs admonition extention. Make title contrast accessible. */
+.wy-alert-title, .rst-content .admonition-title {
+    color: #000000;
+}
+
+
+
+
+
+
+
+
+
+
