@@ -14,7 +14,7 @@ function complit_preprocess_node(&$variables) {
     }
     
     $breadcrumb = drupal_get_breadcrumb();
-    array_shift($breadcrumb);
+//    array_shift($breadcrumb);
     $output = '<nav aria-label="breadcrumb"><ol class="breadcrumb">';
     foreach ($breadcrumb as $value) {
         $output .= '<li class="breadcrumb-item">' . $value . '</li>';

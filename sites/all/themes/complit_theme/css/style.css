@@ -309,7 +309,7 @@ ul.quicktabs-tabs, .nav-tabs {
     
 }*/
 
-#main-menu {
+#main-menu, #top-header-nav {
     z-index: 990;
 }
 
@@ -330,4 +330,61 @@ ul.quicktabs-tabs, .nav-tabs {
 
 .jumbotron {
     border-radius: initial;
+    margin-bottom: 0.5rem;
 }
+
+body {
+    background: #f7f7f5;
+}
+
+.jumbtron-container {
+    position: relative;
+}
+
+.shade {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: #343a40;
+    opacity: 0.5;
+    width: 40%;
+}
+/*
+.jumbtron-container::before, 
+.jumbtron-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    border-color: transparent;
+    border-style: solid;
+}
+
+.jumbtron-container::before {
+    border-width: 30rem;
+    border-left-color: #343a40;
+    border-bottom-color: #343a40;
+    opacity: 0.5;
+}*/
+
+/*.jumbtron-container::after {
+    border-radius: 0.4em;
+    border-width: 1.35em;
+    border-left-color: #0c0;
+    border-bottom-color: #0c0;
+}*/
+
+/*
+
+.shade {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width:50%;
+    opacity: 0.5;
+    border-bottom: 100% solid #343a40;
+    border-right: 100px solid transparent;  
+}*/

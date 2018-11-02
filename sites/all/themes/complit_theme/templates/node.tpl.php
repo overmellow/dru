@@ -82,28 +82,34 @@
 ?>
 
 <div>
-    <div class="jumbotron img-fluid shadow-sm" style="background-image: url(<?php echo file_create_url($node->field_image[$node->language][0]['uri']); ?>); background-size:100% auto;">
-        <div class="container">
-            <h1 class="display-5 text-white">
-                <?php if (!$page): ?>
-                <a href="<?php print $node_url; ?>" style="color: inherit;"><?php print $title; ?></a>
-                <?php else : ?>
-                    <?php print $title; ?>
-                <?php endif; ?>
-            </h1>            
+    <div class="jumbtron-container">
+        <div class="jumbotron img-fluid shadow-sm" style="background-image: url(<?php echo file_create_url($node->field_image[$node->language][0]['uri']); ?>); background-size:100% auto;">
+            <div class="container">
+                <h1 class="display-5 text-white">
+                    <?php if (!$page): ?>
+                    <a href="<?php print $node_url; ?>" style="color: inherit;"><?php print $title; ?></a>
+                    <?php else : ?>
+                        <?php print $title; ?>
+                    <?php endif; ?>
+                </h1>            
+            </div>
         </div>
+        <div class="shade"></div>
     </div>    
     
     <div class="wrapper">
         <div class="container-fluid">
             <div class="row">                           
-                <div class="col-12">
-                    
+<!--                <div class="col-12">
+                    <?php if ($breadcrumb): ?>
+                        <?php print $breadcrumb; ?>
+                    <?php endif; ?>                                        
+                </div>-->
+                <div class="col col-9">
                     <?php if ($breadcrumb): ?>
                         <?php print $breadcrumb; ?>
                     <?php endif; ?>
-                </div>
-                <div class="col col-9">
+                    
                     <?php if ($tabs && user_is_logged_in()): ?>
                         <div class="tabs">
                             <?php print render($tabs); ?>
