@@ -60,37 +60,52 @@
                 </div>
             </div>
             <br>
-            <div class="row">
+            <div class="row mb-2">
                 <div class="col-12">
                     <h4>Bio</h4>
-                    <div class="border-top mb-2"></div>
+                    <div class="border-top"></div>
                     <p>I received my PhD in European History from the University of Chicago. Since coming to Berkeley in 1999, I have been working on two main research tracks: one on the history of legal and political ideas, and the other on the relationship between technology, science, and the history of human cognition. My undergraduate courses and graduate seminars are usually divided between these two main topic areas. My new book project will bring these interests closer together, as my research now focuses on the connections between reason, technology, war, and political organizations as they develop in the age of cybernetic systems theory and the</p>
                 </div>                
             </div>            
-            <br>
-            <div class="row">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h4>Books</h4>
+                    <div class="border-top mb-2"></div>
+                    <div class="card-deck">
+                        <div class="card" style="width:400px">
+                          <img class="card-img-top" src="http://localhost/dru/sites/default/files/altieri.jpg" alt="Card image cap">                          
+                        </div>
+                        <div class="card" style="width:400px">
+                          <img class="card-img-top" src="http://localhost/dru/sites/default/files/altieri.jpg" alt="Card image cap">                         
+                        </div>
+                        <div class="card" style="width:400px">
+                          <img class="card-img-top" src="http://localhost/dru/sites/default/files/altieri.jpg" alt="Card image cap">
+                        </div>
+                    </div>
+                </div>                
+            </div>    
+            <div class="row mb-2">
                 <div class="col">
-
-                    <div>
-                        <ul class="nav nav-pills mb-3" id="myTab" role="tablist">
+                    <div>                       
+                        <ul class="nav nav-tabs nav-justified mb-3 quicktabs-tabs" id="myTab" role="tablist">
                             <li class="nav-item">
-                              <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Books</a>
+                              <a class="nav-link active" id="home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="home" aria-selected="true">Courses</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Select Publications</a>
+                              <a class="nav-link" id="profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="profile" aria-selected="false">Select Publications</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Contact</a>
+                              <a class="nav-link" id="contact-tab" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="contact" aria-selected="false">Articles</a>
                             </li>
                         </ul>
-                        <div class="tab-content" id="myTabContent">
-                            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="home-tab">
                                 Consequat occaecat ullamco amet non eiusmod nostrud dolore irure incididunt est duis anim sunt officia. Fugiat velit proident aliquip nisi incididunt nostrud exercitation proident est nisi. Irure magna elit commodo anim ex veniam culpa eiusmod id nostrud sit cupidatat in veniam ad. Eiusmod consequat eu adipisicing minim anim aliquip cupidatat culpa excepteur quis. Occaecat sit eu exercitation irure Lorem incididunt nostrud.
                             </div>
-                            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="profile-tab">
                                 Ad pariatur nostrud pariatur exercitation ipsum ipsum culpa mollit commodo mollit ex. Aute sunt incididunt amet commodo est sint nisi deserunt pariatur do. Aliquip ex eiusmod voluptate exercitation cillum id incididunt elit sunt. Qui minim sit magna Lorem id et dolore velit Lorem amet exercitation duis deserunt. Anim id labore elit adipisicing ut in id occaecat pariatur ut ullamco ea tempor duis.
                             </div>
-                            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                            <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="contact-tab">
                                 Est quis nulla laborum officia ad nisi ex nostrud culpa Lorem excepteur aliquip dolor aliqua irure ex. Nulla ut duis ipsum nisi elit fugiat commodo sunt reprehenderit laborum veniam eu veniam. Eiusmod minim exercitation fugiat irure ex labore incididunt do fugiat commodo aliquip sit id deserunt reprehenderit aliquip nostrud. Amet ex cupidatat excepteur aute veniam incididunt mollit cupidatat esse irure officia elit do ipsum ullamco Lorem. Ullamco ut ad minim do mollit labore ipsum laboris ipsum commodo sunt tempor enim incididunt. Commodo quis sunt dolore aliquip aute tempor irure magna enim minim reprehenderit. Ullamco consectetur culpa veniam sint cillum aliqua incididunt velit ullamco sunt ullamco quis quis commodo voluptate. Mollit nulla nostrud adipisicing aliqua cupidatat aliqua pariatur mollit voluptate voluptate consequat non.
                             </div>
                         </div>

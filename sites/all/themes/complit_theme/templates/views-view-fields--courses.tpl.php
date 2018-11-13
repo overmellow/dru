@@ -26,10 +26,10 @@
 ?>
 <!--
 <div class="card bg-dark text-white mb-3 hoverable">
-    <?php print $fields['field_image']->content; ?>
+    <?php // print $fields['field_image']->content; ?>
     <div class="card-img-overlay dark-layer">
-        <h5 class="card-title bottom"><?php print $fields['title']->content; ?></h5>
-        <?php print $fields['body']->content; ?>
+        <h5 class="card-title bottom"><?php // print $fields['title']->content; ?></h5>
+        <?php // print $fields['body']->content; ?>
     </div>
 </div>
 -->
@@ -37,17 +37,17 @@
 <!--<div class="row mb-3">-->
 <!--    <div class="col-3 border-right">
         <div class="border-bottom">
-            <div class="text-center month"><?php print $fields['field_date_1']->content; ?></div>
-            <div class="text-center day"><?php print $fields['field_date']->content; ?></div>            
-            <div class="text-center year"><?php print $fields['field_date_2']->content; ?></div>
+            <div class="text-center month"><?php // print $fields['field_date_1']->content; ?></div>
+            <div class="text-center day"><?php // print $fields['field_date']->content; ?></div>            
+            <div class="text-center year"><?php // print $fields['field_date_2']->content; ?></div>
         </div>
         <div class="mt-2">
-            <div class="text-center time"><?php print $fields['field_time_from']->content; ?> - <?php print $fields['field_time_to']->content; ?></div>
+            <div class="text-center time"><?php // print $fields['field_time_from']->content; ?> - <?php // print $fields['field_time_to']->content; ?></div>
         </div>
     </div>
     <div class="col-12 mb-3">
-        <h4><?php print $fields['title']->content; ?></h4>
-        <p><?php print $fields['body']->content; ?></p>
+        <h4><?php // print $fields['title']->content; ?></h4>
+        <p><?php // print $fields['body']->content; ?></p>
     </div>
 </div>-->
         <h4><?php print $fields['title']->content; ?></h4>

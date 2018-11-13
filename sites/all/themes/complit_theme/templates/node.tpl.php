@@ -82,60 +82,43 @@
 ?>
 
 <div>
-    <div class="jumbtron-container">
-        <div class="jumbotron img-fluid shadow-sm" style="background-image: url(<?php echo file_create_url($node->field_image[$node->language][0]['uri']); ?>); background-size:100% auto;">
-            <div class="container">
-                <h1 class="display-5 text-white">
-                    <?php if (!$page): ?>
-                    <a href="<?php print $node_url; ?>" style="color: inherit;"><?php print $title; ?></a>
-                    <?php else : ?>
-                        <?php print $title; ?>
-                    <?php endif; ?>
-                </h1>            
-            </div>
-        </div>
-        <div class="shade"></div>
-    </div>    
     
-    <div class="wrapper">
-        <div class="container-fluid">
-            <div class="row">                           
-<!--                <div class="col-12">
-                    <?php if ($breadcrumb): ?>
-                        <?php print $breadcrumb; ?>
-                    <?php endif; ?>                                        
-                </div>-->
-                <div class="col col-9">
-                    <?php if ($breadcrumb): ?>
-                        <?php print $breadcrumb; ?>
-                    <?php endif; ?>
-                    
-                    <?php if ($tabs && user_is_logged_in()): ?>
-                        <div class="tabs">
-                            <?php print render($tabs); ?>
-                        </div>
-                    <?php endif; ?>
-                    
-<!--                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Library</li>
-                        </ol>
-                    </nav>
-                    -->
-                    
-                    <?php
-                    hide($content['comments']);
-                    hide($content['links']);
-                    hide($content['field_image']);
-                    print render($content);
-                    ?>
-                </div>
-                <div class="col col-3">                                
-                    <?php print render($region['sidebar_right']); ?>
-                </div>
-            </div>        
+    <div class="jumbotron shadow-sm" style="position:relative; background-image: url(<?php echo file_create_url($node->field_image[$node->language][0]['uri']); ?>); background-size:100% auto;">
+        <div class="overlay-shade">
+            <h1 class="display-5 jumbotron-text text-white">
+                <?php if (!$page): ?>
+                <a href="<?php print $node_url; ?>" style="color: inherit;"><?php print $title; ?></a>
+                <?php else : ?>
+                    <?php print $title; ?>
+                <?php endif; ?>
+            </h1>
         </div>
+    </div>
+
+    <div class="container">
+        <div class="row">                           
+            <div class="col-md-12 col-lg-9">
+                <?php if ($breadcrumb): ?>
+                    <?php print $breadcrumb; ?>
+                <?php endif; ?>
+
+                <?php if ($tabs && user_is_logged_in()): ?>
+                    <div class="tabs">
+                        <?php print render($tabs); ?>
+                    </div>
+                <?php endif; ?>                   
+
+                <?php
+                hide($content['comments']);
+                hide($content['links']);
+                hide($content['field_image']);
+                print render($content);
+                ?>
+            </div>
+            <div class="col-md-12 col-lg-3">                                
+                <?php print render($region['sidebar_right']); ?>
+            </div>
+        </div>        
     </div>
     
 </div>

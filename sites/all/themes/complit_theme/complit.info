@@ -25,7 +25,6 @@ regions[footer_top_two] = Footer Top Two
 regions[footer_one] = Footer One
 regions[footer_two] = Footer Two
 regions[footer_three] = Footer Three
-regions[footer_four] = Footer Four
 regions[footer_copyright] = Footer Copyright
 
 ; Information added by Drupal.org packaging script on 2018-09-20
