@@ -25,6 +25,6 @@
  */
 ?>
 
-<div class="card mb-4">
+<div class="card mb-4 col-4 card-book">
     <?php print $fields['field_image']->content; ?>
 </div>

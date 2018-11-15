@@ -7,7 +7,7 @@
  * @ingroup views_templates
  */
 ?>
-<div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
+<div id="carouselExampleControls" class="carousel slide carousel-fade" data-ride="carousel">
     <div class="carousel-inner">
         <ol class="carousel-indicators">
             <li data-target="#carouselExampleControls" data-slide-to="0" class="active"></li>

@@ -11,21 +11,20 @@ html {
 }
 
 body {
-    margin-bottom: 340px; /* Margin bottom by footer height */
+    margin-bottom: 360px; /* Margin bottom by footer height */
     background: #f7f7f5;
 }
 
-/*.container {
-    max-width: 
-}*/
-
-.footer-top {
+.footer {
     position: absolute;
-    bottom: 260px;
+    bottom: 0;
     width: 100%;
-    height: 80px; /* Set the fixed height of the footer here */
+}
+
+#footer-top {
+    min-height: 95px;
     padding: 10px;
-    line-height: 30px; /* Vertically center the text there */
+    line-height: 30px;
     background: -moz-linear-gradient(left,#c2c2c2 50%,#d7d7d7 50%);
     background: -webkit-gradient(left,#c2c2c2 50%,#d7d7d7 50%);
     background: -webkit-linear-gradient(left,#c2c2c2 49.7%,#d7d7d7 49.7%);
@@ -34,25 +33,37 @@ body {
     background: linear-gradient(left,#c2c2c2 50%,#d7d7d7 50%);
 }
 
-.footer {
-  position: absolute;
-  bottom: 60px;
-  width: 100%;
-  height: 200px; /* Set the fixed height of the footer here */
-  padding: 20px;
-  line-height: 30px; /* Vertically center the text there */
-  background-color: #f5f5f5;
-  line-height: 1.5rem;
+@media only screen and (max-width: 992px) {
+    #footer-top {
+        background: #c2c2c2;
+    }
 }
 
-.footer-copyright {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 60px; /* Set the fixed height of the footer here */
-  line-height: 60px; /* Vertically center the text there */
-  background-color: #000000;
+#footer-middle {
+    min-height: 200px;  
+    padding: 20px;
+    line-height: 30px;
+    background-color: #101010;
+    line-height: 1.5rem;
+    color: #fff;
+    letter-spacing: 1px;
 }
+
+#footer-middle ul li {
+    padding: 0 15px 10px 0;
+}
+
+#subfooter {
+    height: 60px;
+    line-height: 60px;
+    background-color: #000000;
+}
+
+#subfooter p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
 
 /* Custom page CSS
 -------------------------------------------------- */
@@ -130,11 +141,6 @@ body {
 .time {
     font-size: 11px;
 }
-/*
-.shadow {
-    box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12);
-}*/
-
 
 /*****/
 
@@ -392,45 +398,80 @@ ul.quicktabs-tabs, .nav-tabs {
     }
 }
 
-/*@media (min-width: 992px) {
-    .container {
-        max-width: 1100px;
-    }
-}*/
-/*
-.jumbtron-container::before, 
-.jumbtron-container::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    border-color: transparent;
-    border-style: solid;
+.card-book {
+    padding-right: 0;
+    padding-left: 0;
 }
 
-.jumbtron-container::before {
-    border-width: 30rem;
-    border-left-color: #343a40;
-    border-bottom-color: #343a40;
-    opacity: 0.5;
+.row-book {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+#email-subscribe {
+    background: #e1e1e1;
+    color: #464646;
+    font-size: 14px;
+    padding: 10px 15px;
+    outline: none;
+    border: none;
+    width: 70%;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-radius: 0px;
+}
+
+#subscribe {
+    margin: 0;
+    height: 40px;
+    background-color: #555;
+    min-width: 0;
+    border-radius: 0px;
+    color: #FFF;
+}
+
+/*i.fab {
+    font-size: 42px;
 }*/
 
-/*.jumbtron-container::after {
-    border-radius: 0.4em;
-    border-width: 1.35em;
-    border-left-color: #0c0;
-    border-bottom-color: #0c0;
-}*/
 
-/*
+ul.social-bookmarks {
+    padding-left: 0;
+}
 
-.shade {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width:50%;
-    opacity: 0.5;
-    border-bottom: 100% solid #343a40;
-    border-right: 100px solid transparent;  
-}*/
+ul.social-bookmarks li {
+    display: inline-block;
+    margin: 4px 3px;
+}
+
+#footer-top ul.social-bookmarks li a {
+    color: #363636;
+    background-color: #959595;
+    border-color: #959595;
+}
+
+ul.social-bookmarks li a {
+    color: #959595;
+    display: block;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    background-color: transparent;
+    border: 1px solid #898989;
+}
+
+ul.social-bookmarks li i{
+    width: 100%;
+    height: 100%;
+    font-size: 23px;
+    line-height: 50px;
+}
+
+#subscribe-newsletter .text, #social-bookmarks .text {
+    font-size: 19px;
+    text-transform: uppercase;
+    text-align: left;
+    vertical-align: bottom;
+    padding: 0 25px 0 0;
+    margin: 0;
+}
